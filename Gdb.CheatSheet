@@ -1,0 +1,61 @@
+SCRIPT FILES
+
+---File with self-defined macros to use inside gdb (.gdbinit needs to be in user's home directory)---
+
+#memory page $bufsize
+define deque_size
+  set $vec = ($arg0)
+
+  # size of one data element
+  set $datasize = sizeof(**$vec._M_impl._M_map)
+  # bufsize is the number of nodes per memory page
+  set $bufsize = $datasize < 512 ? 512/$datasize : 1
+
+  set $x = $vec._M_impl._M_finish
+  set $y = $vec._M_impl._M_start
+  set $size = $bufsize * ($x._M_node - $y._M_node - 1) + ($x._M_cur - $x._M_first) + ($y._M_last - $y._M_cur)
+end
+
+define p_deque_size
+  deque_size ($arg0)
+  printf "Deque size: %d\n", $size
+end
+
+define deque_size_out
+  set $vec = $arg0
+  # size of one data element                                                                                      
+  set $datasize = sizeof(**$vec._M_impl._M_map)
+  # bufsize is the number of nodes per memory page                                                                
+  set $bufsize = $datasize < 512 ? 512/$datasize : 1
+
+  set $x = $vec._M_impl._M_finish
+  set $y = $vec._M_impl._M_start
+  set $arg1 = $bufsize * ($x._M_node - $y._M_node - 1) + ($x._M_cur - $x._M_first) + ($y._M_last - $y._M_cur)
+end
+
+-----------------------------------------------------------------------------------------------------
+
+
+
+---Print some queue size (e.g. file size-log.cmd)---
+
+set pagination off
+set breakpoint pending on
+set logging file ~/gdb/size-log.out
+set logging on
+
+break  callback_wrapper.cc:127
+commands
+
+set $wrapper = ('cassandra::driver::CallbackWrapper'*)data
+set $size = 0
+deque_size_out $wrapper.threads_pool_.data_.work_queue.queue_.c $size
+
+shell echo -n " "=== `date +'%d.%m.%Y %T:%N'` >> ~/gdb/size-log.out 
+printf " === Queue size: %lu \n", $size 
+continue 10000
+end
+continue 
+
+----------------------------------------------------
+

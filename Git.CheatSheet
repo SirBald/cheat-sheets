@@ -1,0 +1,236 @@
+CONFIGURE GIT
+
+    git config -e --global  // or without --global for repository
+    // and fill in the following info
+    [user]
+        email = name.surname@mail.mail
+        name = Name Surname
+    [push]
+        default = simple
+
+
+
+CLONE
+
+    git clone <git_repository> [where/to/clone]     // clone git repository to given path
+    git clone -b <branch> <git_repository>          // clone repository and switch to given branch
+    git clone --recursive <repo>                    // clone repo with submodules and receive all of them automatically
+
+
+
+COMMIT
+
+    git add <file_name_1> <file_name_2> ...
+    git add .                   // add to commit all files (modified / new / removed)
+    git commit -m "<comment>"   // commit all files prepared by add command
+
+
+----IF FORGOT to add file, minor fixes or mixed up the comment in the previous commit
+
+    git add <forgotten_or_changed_file>
+    git commit --amend
+
+
+----UN-STAGE files added after the last commit
+
+    git reset                                   // unstage all added files
+    git reset -- <file 1> <file 2> <file n>     // unstage specified files
+
+
+----LOG
+
+    git log -N    // prints last N commits
+
+
+----SQUASH
+
+    git rebase -i HEAD~<X>  // to combine X commits to the HEAD interactively.
+    // replace 'pick' with 'squash' starting from the second line, save and exit
+    // modify comments, save and exit
+    git push --force --dry-run
+    git push --force
+
+
+----MOVE the most recent commit(s) to a new branch with Git
+
+    // develop A - B - C - D - E
+    // newbranch     C - D - E
+    //              /
+    // develop A - B
+    // Note: Any changes not committed will be lost.
+    git branch newbranch        // Create a new branch, saving the desired commits
+    // or merge changes into an existing branch (or rebase it on top of develop)
+    git reset --hard HEAD~3     // Move master back by 3 commits (GONE from master)
+    git checkout newbranch      // Go to the new branch that still has the desired commits
+
+
+
+MERGE your changes
+
+----REBASE when you work on your own private branch
+
+    git checkout develop
+    git pull
+    git checkout <your_branch>
+    git rebase develop
+    [ // if there are conflicts
+        // resolve
+        git add .
+        git rebase --continue
+    ]
+    git push --force --dry-run
+    git push --force
+
+
+----MERGE when few developers work on the same branch:
+
+    // merge develop to feature first (instead of rebase) and then feature to develop
+    git checkout <feature>      // gets you "on branch <feature>"
+    git fetch origin            // gets you up to date with origin
+    git merge origin/develop
+    git push
+    // check Jenkins that <feature> has passed tests
+    git checkout develop
+    git merge <feature>
+    git push
+
+
+----RESOLVE conflicts
+
+    // If you rebase a branch feature_x against master (i.e. running ```git rebase master``` while on branch feature_x), during
+    // rebasing 'ours' refers to master and 'theirs' to feature_x.
+
+    // use only theirs changes
+    git checkout --ours -- <filename> <filename> ...
+
+    // use only mine changes
+    git checkout --theirs -- <filename> <filename> ...
+
+
+----CHERRY PICK
+
+    // Grab all commits from start (exclude) to the last one from another branch to the current one.
+    // If you want a single commit use a single <commit_id>.
+    git cherry-pick -x <commit_id>...<commit_id>
+
+
+
+BRANCHES
+
+----LIST
+
+    git branch // list local branches
+    git branch -r // list remote-tracking branches
+    git branch -a // list remote-tracking and local branches
+
+
+----REMOVE branches which are not in remote
+
+    git remote update origin --prune                                                // update remote branch list on local machine
+    git branch --merged | egrep -v "(^\*|master|develop)" | xargs git branch -d     // removes all merged branches
+
+    git branch -D <branch_name>     // forces to remove local branch
+
+
+----CREATE new branch
+
+    git checkout develop|master
+    git pull
+    git checkout -b feature/<user_name>/<feature_name>
+    git push -u origin feature/<user_name>/<feature_name>   // push branch to the remote and track it
+
+
+
+REVERT
+
+    git checkout .  // remove un-staged changes
+
+
+----HARD DELETE unpublished commits
+
+    // CAREFUL: ```git reset --hard``` WILL DELETE YOUR WORKING DIRECTORY CHANGES. Be sure to stash any local changes you want to
+    // keep before running this command.
+
+    git reset --hard [HEAD]         // resets the index and working tree to the recent commit (to get rid of WORK IN PROGRESS)
+    git reset --hard HEAD~1         // resets to the commit before HEAD
+    git reset --hard <commit_id>    // reset current branch to commit with given <commit_id>
+
+    // Reset local repository branch to be just like remote repository HEAD
+    git fetch origin
+    git reset --hard origin/<branch>
+
+
+----UNDO published commits with new commits
+
+    git revert a867b4af 25eee4ca 0766c053   // this will create three separate revert commits
+    git revert HEAD~2..HEAD                 // it also takes ranges, this will revert the last two commits
+    git revert a867b4af..0766c053           // similarly, you can revert a range of commits using commit hashes
+    git revert -m 1 <merge_commit_sha>      // reverting a merge commit
+
+
+----RESTORE file from commit
+
+    git log <file/to/restore>   // find commit which to restore
+    git checkout <commit_hash> <file/to/restore>
+
+
+
+STASH
+
+    git stash       // store uncommited changes and remove them
+    git stash pop   // restore the latest changes put into stash and then immediately drop it from the stash. Same as apply and drop
+
+    git stash list  // list of stash items (in a format "stash@{N}:<...>")
+
+    git stash save --include-untracked "What and why are you saving?"   // save modifications and reset to the last commit
+    git stash apply             // restore the latest changes put into stash
+    git stash apply stash@{N}   // restore changes in stash #N
+    git stash drop              // remove the latest changes put into stash
+    git stash drop stash@{N}    // remove changes in stash #N
+
+
+
+SUBMODULES
+
+    git submodule add -b <branch> <repo> <new_name>     // adds branch of repo as submodule to folder new_name
+    git submodule update --recursive --init     // update submodules recursively locally when they were update on server and
+                                                // init if they haven't been init yet
+
+
+----REVERT
+
+    git submodule deinit -f .
+    git submodule update --init
+
+
+----REMOVE
+
+    git submodule deinit a_submodule
+    git rm a_submodule  // Note: a_submodule (no trailing slash)
+    rm -rf .git/modules/a_submodule
+
+
+----SWITCH to another branch
+
+    cd path/to/your/submodule
+    git checkout <branch>
+    cd /path/to/your/parent/repo
+    git add .
+    git commit -m "Make <submodule> tracking <branch>"
+    git push
+
+
+DIFF
+
+    git diff --staged       // diff for staged files
+    git diff <commit_id> HEAD  // diff between head and any commit
+    git diff HEAD~ HEAD     // diff from the last commit
+
+
+----LIST all files in a commit
+
+    // Preferred Way (because it's a plumbing command; meant to be programmatic)
+    git diff-tree --no-commit-id --name-only -r <commit_id>
+
+    // Another Way (less preferred for scripts, because it's a porcelain command; meant to be user-facing)
+    git show --pretty="" --name-only <commit_id>
