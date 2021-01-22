@@ -1,19 +1,27 @@
-CHMOD
+FIND files/directories and execute a command
 
-  // chmod only files (f) / directories (d) in all subdirectories
-  find . -type f -exec chmod 644 -- {} +
-  find . -type d -exec chmod 755 -- {} +
-  // the following will not work if filenames contain spaces or start with a dash
-  find . -type f -exec chmod 644 {} +
-  find . -type d -exec chmod 755 {} +
+  CHMOD
 
+    // chmod only files (f) / directories (d) in all subdirectories
+    find . -type f -exec chmod 644 -- {} +
+    find . -type d -exec chmod 755 -- {} +
+    // the following will not work if filenames contain spaces or start with a dash
+    find . -type f -exec chmod 644 {} +
+    find . -type d -exec chmod 755 {} +
+
+  ONLY TEXT FILES
+
+    // exclude specific directories: '-type d \( -name '.vscode' -o -name 'bin' -o -name 'node_modules' -o -name 'obj' -o -name 'dist' -o -name '.git' \) -prune'
+    // all parameters ANDed by default, use '-o' for OR
+    // find only files: '-type f'
+    // exclude binary files: 'grep -Iq .'
+    // 'exec <command> {} \;': execute <command> for every processed item if it pass conditions (item is passed instead of '{}')
+    // '-print0': format output to be passed to 'xargs' command
+    // 'xargs -0': to be able to process names with spaces ('-0': use line break instead of space to separate arguments)
+    // replace CRLF with LF: 'sed -i -e 's/\r\+$//''
+    find . -type d \( -name '.vscode' -o -name 'bin' -o -name 'node_modules' -o -name 'obj' -o -name 'dist' -o -name '.git' \) -prune -o -type f -exec grep -Iq . {} \; -print0 | xargs -0 sed -i -e 's/\r\+$//'
 
 
 Restart NETWORK interface
 
   sudo ifdown eth0; sudo ifup eth0
-
-
-
-
-
