@@ -64,6 +64,13 @@ COMMIT
     git checkout newbranch      // Go to the new branch that still has the desired commits
 
 
+----REBASE on top of parent branch if its commits has been changed (squashed)
+
+    // Take all commits in my current branch since commit C (not included) and play back on top of B' (the
+    // latest new commit in parent branch)
+    git rebase --onto B' C
+
+
 
 MERGE your changes
 
