@@ -118,6 +118,7 @@ MERGE your changes
 
     // Grab all commits from start (exclude) to the last one from another branch to the current one.
     // If you want a single commit use a single <commit_id>.
+    // '-x' appends a line that says "(cherry picked from commit …​)" to the original commit message.
     git cherry-pick -x <commit_id>...<commit_id>
 
 
