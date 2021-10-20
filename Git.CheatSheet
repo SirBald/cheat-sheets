@@ -25,6 +25,11 @@ COMMIT
     git commit -m "<comment>"   // commit all files prepared by add command
 
 
+----IF MOVE/RENAME files in IDE (not using `git mv`)
+
+    git add -A
+
+
 ----IF FORGOT to add file, minor fixes or mixed up the comment in the previous commit
 
     git add <forgotten_or_changed_file>
