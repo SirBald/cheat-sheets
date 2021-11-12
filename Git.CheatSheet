@@ -47,6 +47,15 @@ COMMIT
     git log -N    // prints last N commits
 
 
+----REBASE
+
+    git checkout <feature_branch>
+    git fetch
+    git rebase --onto origin/<base_branch> HEAD~<N>   // <N> - is the number of new commits in <feature_branch>
+
+    git cherry -v origin/<base_branch> | wc -l        // gets the number of new commits compared to <base_branch>
+
+
 ----SQUASH
 
     git rebase -i HEAD~<X>  // to combine X commits to the HEAD interactively.
