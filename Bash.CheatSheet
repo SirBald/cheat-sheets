@@ -25,3 +25,9 @@ FIND files/directories and execute a command
 Restart NETWORK interface
 
   sudo ifdown eth0; sudo ifup eth0
+
+RENAME files in a batch
+
+  // Using DateTime and file name
+  // Remove the echo command after testing
+  for f in *.*; do echo mv "$f" "$(stat -f '%Sm' -t '[%Y.%m.%d.%H.%M.%S]' "$f") ${f%.*}.${f##*.}"; done
